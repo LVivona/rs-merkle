@@ -3,7 +3,7 @@
 // Author imotai <codego.me@gmail.com>
 //
 use crate::{prelude::*, Hasher};
-use sha2::{digest::FixedOutput, Digest, Sha384};
+use sha2::{Digest, Sha384};
 
 /// Sha384 implementation of the [`Hasher`] trait.
 ///
@@ -39,8 +39,27 @@ impl Hasher for Sha384Algorithm {
     type Hash = [u8; 48];
 
     fn hash(data: &[u8]) -> [u8; 48] {
-        let mut hasher = Sha384::new();
-        hasher.update(data);
-        <[u8; 48]>::from(hasher.finalize_fixed())
+        <[u8; 48]>::from(Sha384::digest(data))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::Sha384Algorithm;
+    use crate::{prelude::*, Hasher};
+
+    use sha2::{digest::FixedOutput, Digest, Sha384};
+
+    #[test]
+    fn test_sha384_with_regular_digest() {
+        let buffer = b"hello world";
+
+        let output = Sha384Algorithm::hash(&buffer[..]);
+
+        let mut old_method = Sha384::new();
+        old_method.update(&buffer);
+
+        let expected = <[u8; 48]>::from(old_method.finalize_fixed());
+        assert_eq!(output, expected)
     }
 }
