@@ -35,9 +35,28 @@ impl Hasher for Sha256Algorithm {
     type Hash = [u8; 32];
 
     fn hash(data: &[u8]) -> [u8; 32] {
-        let mut hasher = Sha256::new();
+        <[u8; 32]>::from(Sha256::digest(data))
+    }
+}
 
-        hasher.update(data);
-        <[u8; 32]>::from(hasher.finalize_fixed())
+
+#[cfg(test)]
+mod test {
+    use crate::{prelude::*, Hasher};
+    use super::Sha256Algorithm;
+    
+    use sha2::{Digest, Sha256, digest::FixedOutput};
+
+    #[test]
+    fn test_sha256_with_regular_digest() {
+        let buffer = b"hello world";
+        
+        let output = Sha256Algorithm::hash(&buffer[..]);
+
+        let mut old_method = Sha256::new();
+        old_method.update(&buffer);
+        
+        let expected = <[u8; 32]>::from(old_method.finalize_fixed())
+        assert_eq!(output, expected)
     }
 }
